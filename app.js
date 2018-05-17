@@ -39,6 +39,11 @@ app.post('/blogs', (req, res) => {
   Blog.create(req.body.blog , (err, newBlog) => err ? res.render('new') : res.redirect('/blogs'));
 });
 
+// Show route
+app.get('/blogs/:id', (req, res) => {
+  Blog.findById(req.params.id, (err, blog) => err ? res.redirect('/blogs') : res.render('show', {blog}));
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
