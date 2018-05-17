@@ -25,8 +25,18 @@ app.get('/', (req, res) => {
   res.redirect('/blogs');
 });
 
+// Index route
 app.get('/blogs', (req, res) => {
   Blog.find({}, (err, blogs) => err ? console.log(err) : res.render('index', {blogs}));
+});
+
+// New route
+app.get('/blogs/new', (req, res) => res.render('new'));
+
+// Create route
+app.post('/blogs', (req, res) => {
+  // Create blog,then, redirect to index
+  Blog.create(req.body.blog , (err, newBlog) => err ? res.render('new') : res.redirect('/blogs'));
 });
 
 app.listen(port, () => {
