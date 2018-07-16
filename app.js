@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
+const expressSanitizer = require('express-sanitizer');
 
 // Init app
 const app = express();
@@ -13,6 +14,7 @@ mongoose.connect('mongodb://localhost/blogApp');
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended:true}));
+app.use(expressSanitizer());
 app.use(methodOverride('_method'));
 
 // Moongoose/Model congig
@@ -41,6 +43,10 @@ app.get('/blogs/new', (req, res) => res.render('new'));
 // Create route
 app.post('/blogs', (req, res) => {
   // Create blog,then, redirect to index
+
+  // sanitize the body text so users cannot use html <script> tags
+  req.body.blog.body = req.sanitize(req.body.blog.body);
+
   Blog.create(req.body.blog , (err, newBlog) => err ? res.render('new') : res.redirect('/blogs'));
 });
 
@@ -62,11 +68,22 @@ app.get('/blogs/:id/edit', (req, res) => {
 
 // Update route
 app.put('/blogs/:id', (req, res) => {
+  req.body.blog.body = req.sanitize(req.body.blog.body);
   Blog.findByIdAndUpdate(req.params.id, req.body.blog, (err, updatedBlog) => {
     if (err) {
       res.redirect('/blogs');
     } else {
       res.redirect(`/blogs/${req.params.id}`);
+    }
+  });
+});
+
+app.delete('/blogs/:id', (req, res) => {
+  Blog.findByIdAndRemove(req.params.id, (err, deletedBlog) => {
+    if (err) {
+      res.redirect('/blogs');
+    } else {
+      res.redirect('/blogs');
     }
   });
 });
